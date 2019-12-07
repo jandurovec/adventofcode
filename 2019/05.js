@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const utils = require('../utils');
+const utils = require('../common/utils');
 const IntcodeComputer = require('./intcode-computer');
 
 /* Part 1 tests */

@@ -1,5 +1,5 @@
 const assert = require('assert').strict;
-const utils = require('../utils');
+const utils = require('../common/utils');
 
 
 function calculateFuel(mass) {
