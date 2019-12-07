@@ -1,5 +1,6 @@
 const assert = require('assert').strict;
 const utils = require('../common/utils');
+const BlockingQueue = require('../common/blocking-queue');
 const IntcodeComputer = require('./intcode-computer');
 
 const AMP_COUNT = 5;
@@ -8,26 +9,39 @@ function getMemContent(filename) {
     return utils.readInput(__dirname, filename)[0].split(',').map(n => parseInt(n));
 }
 
-function getThrusterSignal(memory, phaseSequence) {
-    let outputSignal = 0;
-    for (let i = 0; i < AMP_COUNT; i++) {
-        const input = [phaseSequence[i], outputSignal];
-        const output = new IntcodeComputer([...memory], input).run();
-        outputSignal = output[0];
+(async function () {
 
+    async function getThrusterSignal(memory, phaseSequence) {
+        const ampInputs = [];
+        const ampPromises = [];
+        for (let i = 0; i < AMP_COUNT; i++) {
+            ampInputs[i] = new BlockingQueue([phaseSequence[i]]);
+        }
+        ampInputs[0].enqueue(0);
+        for (let i = 0; i < AMP_COUNT; i++) {
+            ampPromises[i] = new IntcodeComputer([...memory], ampInputs[i], ampInputs[(i + 1) % AMP_COUNT]).run();
+        }
+
+        await Promise.all(ampPromises);
+        return ampInputs[0].dequeue();
     }
-    return outputSignal;
-}
 
-assert.deepStrictEqual(getThrusterSignal(getMemContent('07-sample1.txt'), [4, 3, 2, 1, 0]), 43210);
-assert.deepStrictEqual(getThrusterSignal(getMemContent('07-sample2.txt'), [0, 1, 2, 3, 4]), 54321);
-assert.deepStrictEqual(getThrusterSignal(getMemContent('07-sample3.txt'), [1, 0, 4, 3, 2]), 65210);
+    assert.deepStrictEqual(await getThrusterSignal(getMemContent('07-sample1.txt'), [4, 3, 2, 1, 0]), 43210);
+    assert.deepStrictEqual(await getThrusterSignal(getMemContent('07-sample2.txt'), [0, 1, 2, 3, 4]), 54321);
+    assert.deepStrictEqual(await getThrusterSignal(getMemContent('07-sample3.txt'), [1, 0, 4, 3, 2]), 65210);
 
-let maxSignal = 0;
-const memory = getMemContent('07.txt');
-utils.permutate([0, 1, 2, 3, 4]).forEach(phaseSequence => {
-    let signal = getThrusterSignal(memory, phaseSequence);
-    maxSignal = Math.max(signal, maxSignal);
-});
+    async function getMaxThrusterSignal(phases) {
+        let maxSignal = 0;
+        const memory = getMemContent('07.txt');
+        const perms = utils.permutate(phases);
+        for (let i = 0; i < perms.length; i++) {
+            let signal = await getThrusterSignal(memory, perms[i]);
+            maxSignal = Math.max(signal, maxSignal);
+        }
+        return maxSignal;
+    }
 
-console.log(maxSignal);
+    console.log(await getMaxThrusterSignal([0,1,2,3,4]));
+    console.log(await getMaxThrusterSignal([5,6,7,8,9]));
+
+})();

@@ -1,15 +1,24 @@
+const BlockingQueue = require('../common/blocking-queue');
+
 const MAX_PARAMS = 3;
 
 class IntcodeComputer {
     /**
      * @param {number[]} memory
      */
-    constructor(memory, input = [], output= []) {
+    constructor(memory, input = [], output = []) {
         this.memory = memory;
-        this.input = input;
-        this.output = output;
+        if (input instanceof BlockingQueue) {
+            this.input = input;
+        } else {
+            this.input = new BlockingQueue(input);
+        }
+        if (output instanceof BlockingQueue) {
+            this.output = output;
+        } else {
+            this.output = new BlockingQueue(output);
+        }
         this.ip = 0;
-        this.nextInput = 0;
     }
 
     parseInstr() {
@@ -36,7 +45,7 @@ class IntcodeComputer {
         }
     }
 
-    run() {
+    async run() {
         while (true) {
             this.parseInstr();
             switch (this.currentInstr.opCode) {
@@ -49,11 +58,11 @@ class IntcodeComputer {
                     this.ip += 4;
                     break;
                 case 3: // input
-                    this.memory[this.memory[this.ip + 1]] = this.input[this.nextInput++];
+                    this.memory[this.memory[this.ip + 1]] = await this.input.dequeue();
                     this.ip += 2;
                     break;
                 case 4: // output
-                    this.output.push(this.getInstrArg(1));
+                    this.output.enqueue(this.getInstrArg(1));
                     this.ip += 2;
                     break;
                 case 5: // jump-if-true
@@ -79,7 +88,7 @@ class IntcodeComputer {
                     this.ip += 4;
                     break;
                 case 99:
-                    return this.output;
+                    return this.output.data;
                 default:
                     throw new Error("Invalid instruction: " + this.currentInstr);
             }
