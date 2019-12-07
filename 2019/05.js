@@ -3,9 +3,7 @@ const utils = require('../utils');
 const IntcodeComputer = require('./intcode-computer');
 
 /* Part 1 tests */
-const out1 = [];
-new IntcodeComputer([3,0,4,0,99], [1234], out1).run();
-assert.deepStrictEqual(out1, [1234])
+assert.deepStrictEqual(new IntcodeComputer([3,0,4,0,99], [1234]).run(), [1234])
 
 const mem2 = [1002,4,3,4,33];
 new IntcodeComputer(mem2).run();
@@ -17,6 +15,26 @@ assert.deepStrictEqual(mem3, [1101,100,-1,4,99]);
 /* --- */
 
 const memory = utils.readInput(__dirname, '05.txt')[0].split(',').map(n => parseInt(n));
-const output = [];
-new IntcodeComputer(memory, [1], output).run();
-console.log(output);
+console.log(new IntcodeComputer([...memory], [1]).run());
+
+/* Part 2 tests */
+assert.deepStrictEqual(new IntcodeComputer([3,9,8,9,10,9,4,9,99,-1,8], [8]).run(), [1]);
+assert.deepStrictEqual(new IntcodeComputer([3,9,8,9,10,9,4,9,99,-1,8], [9]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,9,7,9,10,9,4,9,99,-1,8], [7]).run(), [1]);
+assert.deepStrictEqual(new IntcodeComputer([3,9,7,9,10,9,4,9,99,-1,8], [9]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1108,-1,8,3,4,3,99], [8]).run(), [1]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1108,-1,8,3,4,3,99], [9]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1107,-1,8,3,4,3,99], [7]).run(), [1]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1107,-1,8,3,4,3,99], [9]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], [0]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9], [1]).run(), [1]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1105,-1,9,1101,0,0,12,4,12,99,1], [0]).run(), [0]);
+assert.deepStrictEqual(new IntcodeComputer([3,3,1105,-1,9,1101,0,0,12,4,12,99,1], [1]).run(), [1]);
+
+const check_8_mem = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99];
+assert.deepStrictEqual(new IntcodeComputer([...check_8_mem], [7]).run(), [999]);
+assert.deepStrictEqual(new IntcodeComputer([...check_8_mem], [8]).run(), [1000]);
+assert.deepStrictEqual(new IntcodeComputer([...check_8_mem], [9]).run(), [1001]);
+/* --- */
+
+console.log(new IntcodeComputer([...memory], [5]).run());
