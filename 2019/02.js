@@ -11,7 +11,7 @@ async function compute(memory, noun = null, verb = null) {
     if (verb != null) {
         memory[2] = verb;
     }
-    
+
     let comp = new IntcodeComputer(memory);
     await comp.run();
     return memory;
@@ -29,8 +29,9 @@ console.log((await compute([...memory], 12, 2))[0]);
 loop:
 for(let noun = 0; noun <= 99; noun++) {
     for(let verb = 0; verb <= 99; verb++) {
-        let result = await compute([...memory], noun, verb)[0];
-        if (result == 19690720) {
+        let mem = [...memory];
+        await compute(mem, noun, verb);
+        if (mem[0] == 19690720) {
             console.log(100 * noun + verb);
             break loop;
         }
