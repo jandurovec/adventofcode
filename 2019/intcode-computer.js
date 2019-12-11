@@ -5,21 +5,13 @@ const MAX_PARAMS = 3;
 class IntcodeComputer {
     /**
      * @param {number[]} memory
-     * @param {number[]|BlockingQueue} input
-     * @param {number[]|BlockingQueue} output
+     * @param {function(): Promise<number>} input
+     * @param {function(number): void} output
      */
-    constructor(memory, input = [], output = []) {
+    constructor(memory, input, output = ((n) => {})) {
         this.memory = memory;
-        if (input instanceof BlockingQueue) {
-            this.input = input;
-        } else {
-            this.input = new BlockingQueue(input);
-        }
-        if (output instanceof BlockingQueue) {
-            this.output = output;
-        } else {
-            this.output = new BlockingQueue(output);
-        }
+        this.input = input;
+        this.output = output;
         this.ip = 0;
         this.relBase = 0;
     }
@@ -60,7 +52,7 @@ class IntcodeComputer {
     }
 
     /**
-     * @returns {Promise<number[]>} computer output
+     * @returns {Promise<void>} computer output
      */
     async run() {
         while (true) {
@@ -75,11 +67,11 @@ class IntcodeComputer {
                     this.ip += 4;
                     break;
                 case 3: // input
-                    this.set(1, await this.input.dequeue());
+                    this.set(1, await this.input());
                     this.ip += 2;
                     break;
                 case 4: // output
-                    this.output.enqueue(this.getParam(1));
+                    this.output(this.getParam(1));
                     this.ip += 2;
                     break;
                 case 5: // jump-if-true
@@ -109,11 +101,26 @@ class IntcodeComputer {
                     this.ip += 2;
                     break;
                 case 99:
-                    return this.output.data;
+                    return;
                 default:
                     throw new Error("Invalid instruction: " + this.memory[this.ip]);
             }
         }
+    }
+
+    /**
+     * @param {number[]} memory
+     * @param {number[]} input
+     * @returns {Promise<number[]>} computer output
+     */
+    static async run(memory, input) {
+        const out = [];
+        let i = 0;
+        async function getInput() {
+            return input[i++];
+        }
+        await new IntcodeComputer(memory, getInput, n => out.push(n)).run();
+        return out;
     }
 }
 

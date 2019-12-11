@@ -18,8 +18,14 @@ function getMemContent(filename) {
             ampInputs[i] = new BlockingQueue([phaseSequence[i]]);
         }
         ampInputs[0].enqueue(0);
+        function input(i) {
+            return () => ampInputs[i].dequeue();
+        }
+        function output(i) {
+            return n => ampInputs[i].enqueue(n);
+        }
         for (let i = 0; i < AMP_COUNT; i++) {
-            ampPromises[i] = new IntcodeComputer([...memory], ampInputs[i], ampInputs[(i + 1) % AMP_COUNT]).run();
+            ampPromises[i] = new IntcodeComputer([...memory], input(i), output((i + 1) % AMP_COUNT)).run();
         }
 
         await Promise.all(ampPromises);
