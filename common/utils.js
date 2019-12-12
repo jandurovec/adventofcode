@@ -2,6 +2,27 @@ const fs = require('fs');
 const path = require('path');
 
 /**
+ * @param {number} a
+ * @param {number} b
+ * @returns {number} greatest common divisor of a and b
+ */
+function gcd(a, b) {
+    if (b == 0) {
+        return a;
+    } else {
+        return gcd(b, a % b);
+    }
+}
+
+/**
+ * @param {...number} numbers
+ * @returns {number} least common multiple of numbers
+ */
+function lcm(...numbers) {
+     return numbers.reduce((res, val, i) => val * res / gcd(val, res), 1);
+}
+
+/**
  * @param {number} x1
  * @param {number} y1
  * @param {number} x2
@@ -42,6 +63,8 @@ function readInput(dir, file) {
     return fs.readFileSync(path.resolve(dir, file)).toString().split(/\r?\n/);
 }
 
+module.exports.gcd = gcd;
+module.exports.lcm = lcm;
 module.exports.manhattanDistance = manhattanDistance;
 module.exports.permutate = permutate;
 module.exports.readInput = readInput;
