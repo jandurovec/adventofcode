@@ -63,8 +63,20 @@ function readInput(dir, file) {
     return fs.readFileSync(path.resolve(dir, file)).toString().split(/\r?\n/);
 }
 
-module.exports.gcd = gcd;
-module.exports.lcm = lcm;
-module.exports.manhattanDistance = manhattanDistance;
-module.exports.permutate = permutate;
-module.exports.readInput = readInput;
+function termClear() {
+    process.stdout.write("\u001b[2J\u001b[H");
+}
+
+function termWrite(line, col, text) {
+    process.stdout.write(`\u001b[${line + 1};${col + 1}H${text}\u001b[H`);
+}
+
+module.exports = {
+    gcd,
+    lcm,
+    manhattanDistance,
+    permutate,
+    readInput,
+    termClear,
+    termWrite
+}
