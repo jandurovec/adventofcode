@@ -1,5 +1,3 @@
-const BlockingQueue = require('../common/blocking-queue');
-
 const MAX_PARAMS = 3;
 
 class IntcodeComputer {
