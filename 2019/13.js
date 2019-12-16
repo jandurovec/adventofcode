@@ -1,4 +1,5 @@
 const utils = require('../common/utils');
+const Grid = require('../common/grid');
 const IntcodeComputer = require('./intcode-computer');
 
 const EMPTY = ' ', WALL = '|', BLOCK = '#', PADDLE = '=', BALL = 'o';
@@ -8,7 +9,7 @@ const FRAME_DELAY = 0;
 class Arcade {
     constructor(paintProgress = false) {
         this.paintProgress = paintProgress;
-        this.data = [];
+        this.data = new Grid();
         this.ballPos = 0;
         this.paddlePos = 0;
     }
@@ -20,12 +21,9 @@ class Arcade {
                 utils.termWrite(0, 1, `Score: ${value}`);
             }
         } else {
-            if (this.data[y] === undefined) {
-                this.data[y] = [];
-            }
-            this.data[y][x] = TILES[value];
+            this.data.set(x, y, TILES[value]);
             if (this.paintProgress) {
-                utils.termWrite(y + 1, x, this.data[y][x]);
+                utils.termWrite(y + 1, x, this.data.get(x, y));
             }
             switch (TILES[value]) {
                 case BALL:
@@ -55,7 +53,7 @@ function outputProcessor() {
 (async function () {
     const prg = utils.readInput(__dirname, '13.txt')[0].split(',').map(n => parseInt(n));
     await new IntcodeComputer([...prg], null, outputProcessor()).run();
-    const blockCount = a.data.reduce((sum, row) => sum + row.filter(x => x == BLOCK).length, 0);
+    const blockCount = a.data.entries.map(x => x.value === BLOCK ? 1 : 0).reduce((sum, cur) => sum + cur, 0);
 
     a.paintProgress = true;
     prg[0] = 2;

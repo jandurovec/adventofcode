@@ -1,33 +1,17 @@
-const assert = require('assert').strict;
 const utils = require('../common/utils');
+const Grid = require('../common/grid');
 const BlockingQueue = require('../common/blocking-queue');
 const IntcodeComputer = require('./intcode-computer');
 
 const WALL = '#', FREE = '.', OXYGEN = 'O';
-
-function pos(x, y) {
-    return x + ',' + y;
-}
-
-function parsePos(pos) {
-    const parsedPos = pos.split(',').map(n => parseInt(n));
-    return {
-        x: parsedPos[0],
-        y: parsedPos[1]
-    };
-}
 
 async function constructMap(filename) {
     const toExplore = [
         { x: 0, y: 0, path: [] }
     ];
 
-    const map = {
-        "0,0": {
-            surface: FREE,
-            moves: 0
-        }
-    };
+    const map = new Grid();
+    map.set(0, 0, { surface: FREE, moves: 0 });
 
     function getStepBack(step) {
         switch (step) {
@@ -56,21 +40,15 @@ async function constructMap(filename) {
     }
 
     async function check(prefix, lastMove, destX, destY, moves) {
-        if (map[pos(destX, destY)] === undefined) {
+        if (map.get(destX, destY) === undefined) {
             cpuInput.enqueue(lastMove);
             const moveRes = await cpuOutput.dequeue();
             if (moveRes == 0) {
-                map[pos(destX, destY)] = {
-                    surface: WALL,
-                    moves
-                };
+                map.set(destX, destY, { surface: WALL, moves });
             } else {
                 switch (moveRes) {
                     case 1:
-                        map[pos(destX, destY)] = {
-                            surface: FREE,
-                            moves
-                        };
+                        map.set(destX, destY, { surface: FREE, moves });
                         toExplore.push({
                             x: destX,
                             y: destY,
@@ -78,10 +56,7 @@ async function constructMap(filename) {
                         });
                         break;
                     case 2:
-                        map[pos(destX, destY)] = {
-                            surface: OXYGEN,
-                            moves
-                        };
+                        map.set(destX, destY, { surface: OXYGEN, moves });
                         break;
                     default:
                         throw new Error(`Unexpected computer output: ${moveRes}`);
@@ -93,7 +68,7 @@ async function constructMap(filename) {
 
     async function explore(loc) {
         const pathBack = await move(loc.path);
-        const moves = map[pos(loc.x, loc.y)].moves;
+        const moves = map.get(loc.x, loc.y).moves;
         await check(loc.path, 1, loc.x, loc.y - 1, moves + 1);
         await check(loc.path, 2, loc.x, loc.y + 1, moves + 1);
         await check(loc.path, 3, loc.x - 1, loc.y, moves + 1);
@@ -111,7 +86,7 @@ async function constructMap(filename) {
 
     return {
         map,
-        oxygen: parsePos(Object.keys(map).find(k => map[k].surface === OXYGEN))
+        oxygen: map.entries.find(e => e.value.surface === OXYGEN)
     };
 }
 
@@ -120,7 +95,7 @@ function fillOxygen(map, startX, startY) {
     const toExplore = [{ x: startX, y: startY, minutes: 0 }]
 
     function check(x, y, minutes) {
-        if (map[pos(x, y)].surface === FREE && map[pos(x, y)].minutes === undefined) {
+        if (map.get(x, y).surface === FREE && map.get(x, y).minutes === undefined) {
             totalMinutes = minutes;
             toExplore.push({ x, y, minutes });
         }
@@ -128,7 +103,7 @@ function fillOxygen(map, startX, startY) {
 
     while (toExplore.length > 0) {
         const curr = toExplore.shift();
-        map[pos(curr.x, curr.y)].minutes = curr.minutes;
+        map.get(curr.x, curr.y).minutes = curr.minutes;
         check(curr.x - 1, curr.y, curr.minutes + 1);
         check(curr.x + 1, curr.y, curr.minutes + 1);
         check(curr.x, curr.y - 1, curr.minutes + 1);
@@ -140,6 +115,6 @@ function fillOxygen(map, startX, startY) {
 
 (async function () {
     const shipData = await constructMap('15.txt');
-    console.log(shipData.map[pos(shipData.oxygen.x, shipData.oxygen.y)].moves);
+    console.log(shipData.map.get(shipData.oxygen.x, shipData.oxygen.y).moves);
     console.log(fillOxygen(shipData.map, shipData.oxygen.x, shipData.oxygen.y));
 })();

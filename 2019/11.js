@@ -1,5 +1,6 @@
 const assert = require('assert').strict;
 const utils = require('../common/utils');
+const Grid = require('../common/grid');
 const IntcodeComputer = require('./intcode-computer');
 
 const UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3;
@@ -7,13 +8,9 @@ const DIRECTIONS = 4;
 
 class HullPaintingRobot {
     constructor(startColor = 0) {
-        this.hull = {};
+        this.hull = new Grid();
         this.x = 0;
         this.y = 0;
-        this.minX = 0;
-        this.maxX = 0;
-        this.minY = 0;
-        this.maxY = 0;
         this.orientation = 0;
         this.paint(startColor);
     }
@@ -24,22 +21,10 @@ class HullPaintingRobot {
 
     move() {
         switch (this.orientation) {
-            case UP:
-                this.y++;
-                this.maxY = Math.max(this.y, this.maxY);
-                break;
-            case DOWN:
-                this.y--;
-                this.minY = Math.min(this.y, this.minY);
-                break;
-            case RIGHT:
-                this.x++;
-                this.maxX = Math.max(this.x, this.maxX);
-                break;
-            case LEFT:
-                this.x--;
-                this.minX = Math.min(this.x, this.minX);
-                break;
+            case UP: this.y--; break;
+            case DOWN: this.y++; break;
+            case RIGHT: this.x++; break;
+            case LEFT: this.x--; break;
         }
     }
 
@@ -54,25 +39,19 @@ class HullPaintingRobot {
     }
 
     getColor() {
-        return this.hull[this.getPos()] == 1 ? 1 : 0;
+        return this.hull.get(this.x, this.y) == 1 ? 1 : 0;
     }
 
     paint(n) {
-        this.hull[this.getPos()] = n;
+        this.hull.set(this.x, this.y, n);
     }
 
     getPaintedPanels() {
-        return Object.keys(this.hull).length;
+        return Object.keys(this.hull.entries).length;
     }
 
     print() {
-        for (let j = this.maxY; j >= this.minY; j--) {
-            const line = [];
-            for (let i = this.minX; i <= this.maxX; i++) {
-                line.push(this.hull[this.getPos(i, j)] == 1 ? '\u25AE' : ' ');
-            }
-            console.log(line.join(''));
-        }
+        this.hull.print(v => v == 1 ? '\u25AE' : ' ');
     }
 
 }

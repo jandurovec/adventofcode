@@ -1,13 +1,10 @@
 const assert = require('assert').strict;
+const Grid = require('../common/grid');
 const utils = require('../common/utils');
 
 function solve(inputfile) {
-    const board = {};
+    const board = new Grid();
     const crossings = [];
-
-    function idx(x,y) {
-        return x + ',' + y;
-    }
 
     function addWire(wire, wireId) {
         let x = 0;
@@ -17,7 +14,7 @@ function solve(inputfile) {
             let segment = wire[i];
             let direction = segment.charAt(0);
             let length = parseInt(segment.substr(1));
-            while(length-- > 0) {
+            while (length-- > 0) {
                 steps++;
                 if (direction == 'R') {
                     y++;
@@ -28,29 +25,17 @@ function solve(inputfile) {
                 } else if (direction == 'D') {
                     x++;
                 }
-                let current = board[idx(x,y)];
+                let current = board.get(x, y);
                 if (current === undefined) {
                     let val = {
                     };
                     val[wireId] = steps;
-                    board[idx(x,y)] = val;
+                    board.set(x, y, val);
                 } else if (current[wireId] === undefined) {
                     current[wireId] = steps;
-                    crossings.push({x: x, y: y, steps: current});
+                    crossings.push({ x: x, y: y, steps: current });
                 }
             }
-        }
-    }
-
-    function drawBoard(fromX, toX, fromY, toY) {
-        for (let i = fromX; i <= toX; i++) {
-            let row = '';
-            for (let j = fromY; j <= toY; j++) {
-                let val = board[idx(i,j)];
-                val = val === undefined ? '.' : val;
-                row = row + val;
-            }
-            console.log(row);
         }
     }
 
@@ -65,7 +50,7 @@ function solve(inputfile) {
 }
 
 assert.strictEqual(solve('03-sample0.txt').part1, 6);
-assert.deepStrictEqual(solve('03-sample1.txt'), {part1: 159, part2: 610});
-assert.deepStrictEqual(solve('03-sample2.txt'), {part1: 135, part2: 410});
+assert.deepStrictEqual(solve('03-sample1.txt'), { part1: 159, part2: 610 });
+assert.deepStrictEqual(solve('03-sample2.txt'), { part1: 135, part2: 410 });
 
 console.log(solve('03.txt'));
