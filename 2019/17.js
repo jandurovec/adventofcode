@@ -87,45 +87,26 @@ class Scaffolding {
         return result;
     }
 
-    findMovement(path) {
-        let routine = path;
-
-        for (let aLen = 1; aLen <= MEMSIZE; aLen++) {
-            const aPattern = routine.substring(0, aLen);
-            if (!aPattern.match(/^.*[^,]$/)) {
+    findMovement(path, curr = 'A', resCollector = { path, procs: new Map() }) {
+        const tail = path.replace(/^[ABC,]+/, '');
+        for (let i = 1; i <= MEMSIZE; i++) {
+            const pattern = tail.substring(0, i);
+            if (!pattern.match(/^[^ABC]*[^ABC,]$/)) {
                 continue;
             }
-            routine = routine.replace(new RegExp(aPattern, 'g'), 'A');
-            let rest = routine.replace(/^[A,]+/, '');
-            for (let bLen = 1; bLen <= MEMSIZE; bLen++) {
-                const bPattern = rest.substring(0, bLen);
-                if (!bPattern.match(/^.*[^,]$/)) {
-                    continue;
+            resCollector.procs.set(curr, pattern);
+            const newPath = path.replace(new RegExp(pattern, 'g'), curr);
+            if (curr === 'C') {
+                if (newPath.match(/^[ABC,]+$/) && newPath.length <= MEMSIZE) {
+                    resCollector.routine = newPath;
+                    return resCollector;
                 }
-                routine = routine.replace(new RegExp(bPattern, 'g'), 'B');
-                rest = routine.replace(/^[AB,]+/, '');
-                for (let cLen = 1; cLen <= MEMSIZE; cLen++) {
-                    const cPattern = rest.substring(0, cLen);
-                    if (!cPattern.match(/^.*[^,]$/)) {
-                        continue;
-                    }
-                    routine = routine.replace(new RegExp(cPattern, 'g'), 'C');
-                    if (routine.match(/^[ABC,]+$/) && routine.length <= MEMSIZE) {
-                        return {
-                            path,
-                            routine,
-                            A: aPattern,
-                            B: bPattern,
-                            C: cPattern
-                        }
-                    }
-                    routine = routine.replace(/C/g, cPattern);
-                    rest = routine.replace(/^[AB,]+/, '');
+            } else {
+                const res = this.findMovement(newPath, String.fromCharCode(curr.charCodeAt(0) + 1), resCollector);
+                if (res !== undefined) {
+                    return res;
                 }
-                routine = routine.replace(/B/g, bPattern);
-                rest = routine.replace(/^[A,]+/, '');
             }
-            routine = routine.replace(/A/g, aPattern);
         }
     }
 }
@@ -137,8 +118,8 @@ async function constructMap() {
     return map;
 }
 
-async function getDust(movement) {
-    const input = `${movement.routine}\n${movement.A}\n${movement.B}\n${movement.C}\nn\n`.split('').map(n => n.charCodeAt(0));
+async function getDust(mov) {
+    const input = `${mov.routine}\n${mov.procs.get('A')}\n${mov.procs.get('B')}\n${mov.procs.get('C')}\nn\n`.split('').map(n => n.charCodeAt(0));
     const output = [];
     const prg = [...PROG];
     prg[0] = 2;
@@ -147,7 +128,6 @@ async function getDust(movement) {
     return output.filter(n => n > 255)[0];
 }
 
-
 (async function () {
     const scaffolding = await constructMap();
     console.log(scaffolding.getAlignmentSum());
@@ -155,7 +135,5 @@ async function getDust(movement) {
     const movement = scaffolding.findMovement(scaffolding.findPath().join());
     console.log(movement);
 
-    const dust = await getDust(movement)
-    console.log(dust);
-
+    console.log(await getDust(movement));
 })();
