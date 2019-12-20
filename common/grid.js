@@ -1,16 +1,17 @@
+const utils = require('./utils');
+
 class Grid {
     constructor() {
         this.data = {};
-        this._idx = (x, y) => x + ',' + y;
     }
 
     get(x, y) {
-        const entry = this.data[this._idx(x, y)];
+        const entry = this.data[utils.pos(x, y)];
         return entry === undefined ? undefined : entry.value;
     }
 
     set(x, y, value) {
-        this.data[this._idx(x, y)] = { x, y, value };
+        this.data[utils.pos(x, y)] = { x, y, value };
         if (this.minX === undefined || x < this.minX) {
             this.minX = x;
         }

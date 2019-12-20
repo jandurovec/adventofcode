@@ -23,6 +23,23 @@ function lcm(...numbers) {
 }
 
 /**
+ * Parses string position representation
+ * @param {string} pos positon representation
+ */
+function parsePos(pos) {
+    const split = pos.split(',').map(n => parseInt(n));
+    return {x: split[0], y: split[1] }
+}
+
+/**
+ * @param {number} x x-coordinate
+ * @param {number} y y-coordinate
+ * @returns {string} position representation
+ */
+function pos(x, y) {
+    return x + ',' + y;
+}
+/**
  * @param {number} x1
  * @param {number} y1
  * @param {number} x2
@@ -75,6 +92,8 @@ module.exports = {
     gcd,
     lcm,
     manhattanDistance,
+    parsePos,
+    pos,
     permutate,
     readInput,
     termClear,
