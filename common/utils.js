@@ -39,6 +39,33 @@ function parsePos(pos) {
 function pos(x, y) {
     return x + ',' + y;
 }
+
+/**
+ * @param {number|BigInt} a
+ * @param {number|BigInt} b
+ * @param {number|BigInt} n
+ * @returns {number|BigInt} a ^ b mod m
+ */
+function powMod(a, b, n) {
+    a = a % n;
+    let result = typeof a === 'bigint' ? 1n : 1;
+    let x = a;
+
+    while (b > 0) {
+        const leastSignificantBit = b % (typeof b === 'bigint' ? 2n : 2)
+        b = typeof b === 'bigint' ? b / 2n : Math.floor(b / 2);
+
+        if (leastSignificantBit == 1) {
+            result = result * x;
+            result = result % n;
+        }
+
+        x = x * x;
+        x = x % n;
+    }
+    return result;
+};
+
 /**
  * @param {number} x1
  * @param {number} y1
@@ -94,6 +121,7 @@ module.exports = {
     manhattanDistance,
     parsePos,
     pos,
+    powMod,
     permutate,
     readInput,
     termClear,
