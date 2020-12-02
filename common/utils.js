@@ -107,6 +107,15 @@ function readInput(dir, file) {
     return fs.readFileSync(path.resolve(dir, file)).toString().split(/\r?\n/);
 }
 
+/**
+ * @param {*} dir
+ * @param {*} file
+ * @returns {number[]} input file split by lines
+ */
+function readNumberInput(dir, file) {
+    return readInput(dir, file).map(n => parseInt(n))
+}
+
 function termClear() {
     process.stdout.write("\u001b[2J\u001b[H");
 }
@@ -124,6 +133,7 @@ module.exports = {
     powMod,
     permutate,
     readInput,
+    readNumberInput,
     termClear,
     termWrite
 }
