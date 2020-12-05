@@ -101,10 +101,11 @@ function permutate(arr) {
 /**
  * @param {*} dir
  * @param {*} file
+ * @param {string | RegExp} separator
  * @returns {string[]} input file split by lines
  */
-function readInput(dir, file) {
-    return fs.readFileSync(path.resolve(dir, file)).toString().split(/\r?\n/);
+function readInput(dir, file, separator = /\r?\n/) {
+    return fs.readFileSync(path.resolve(dir, file)).toString().split(separator);
 }
 
 /**
