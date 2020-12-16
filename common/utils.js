@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const NEWLINE_REGEX = /\r?\n/;
+
 /**
  * @param {number} a
  * @param {number} b
@@ -104,7 +106,7 @@ function permutate(arr) {
  * @param {string | RegExp} separator
  * @returns {string[]} input file split by lines
  */
-function readInput(dir, file, separator = /\r?\n/) {
+function readInput(dir, file, separator = NEWLINE_REGEX) {
     return fs.readFileSync(path.resolve(dir, file)).toString().split(separator);
 }
 
@@ -126,6 +128,7 @@ function termWrite(line, col, text) {
 }
 
 module.exports = {
+    NEWLINE_REGEX,
     gcd,
     lcm,
     manhattanDistance,
