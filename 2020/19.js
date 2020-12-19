@@ -28,7 +28,7 @@ function match(s, rules) {
 
         const rule = rules.get(n);
         if (Array.isArray(rule)) {
-            for(let alternative of rule) {
+            for (let alternative of rule) {
                 i = origI;
                 let j = 0;
                 while (j < alternative.length && matchSub(alternative[j])) {
@@ -53,11 +53,80 @@ function match(s, rules) {
     return matchSub('0') && i === s.length;
 }
 
+function getBounds(n, rules) {
+    const rule = rules.get(n);
+
+    if (Array.isArray(rule)) {
+        return rule.reduce((agg, r) => {
+            const cur = r.reduce(
+                (sum, rr) => {
+                    const b = getBounds(rr, rules);
+                    return {
+                        min: sum.min + b.min,
+                        max: sum.max + b.max
+                    }
+                },
+                { min: 0, max: 0 });
+            return {
+                min: Math.min(agg.min, cur.min),
+                max: Math.max(agg.max, cur.max)
+            }
+        },
+            { min: Infinity, max: 0 });
+    } else {
+        return {
+            min: rule.length,
+            max: rule.length
+        }
+    }
+}
+
 function part1(filename) {
-    const {rules, messages} = parseInput(filename);
+    const { rules, messages } = parseInput(filename);
     return messages.map(m => match(m, rules) ? 1 : 0).reduce((a, b) => a + b);
 }
 
-assert.strictEqual(part1('19-sample.txt'), 2);
+function part2(filename) {
+    const { rules, messages } = parseInput(filename);
+
+    /**
+     * Rule update means that the message should match n * 42 followed by m * 31 (n > m; m > 0)
+     */
+    function match2(m) {
+        const bounds42 = getBounds('42', rules);
+        const bounds31 = getBounds('31', rules);
+
+        let n31 = 1;
+        while ((n31 + 1) * bounds42.min + n31 * bounds31.min <= m.length) {
+            let n42 = n31 + 1;
+            while (n42 * bounds42.min + n31 * bounds31.min <= m.length) {
+                if (n42 * bounds42.max + n31 * bounds31.max >= m.length) {
+                    const rule0 = [];
+                    for (let i = 0; i < n42; i++) {
+                        rule0.push('42');
+                    }
+                    for (let i = 0; i < n31; i++) {
+                        rule0.push('31');
+                    }
+                    rules.set('0', [rule0]);
+                    if (match(m, rules)) {
+                        return true;
+                    }
+                }
+                n42++;
+            }
+            n31++;
+        }
+        return false;
+    }
+
+    return messages.map(m => match2(m, rules) ? 1 : 0).reduce((a, b) => a + b);
+}
+
+assert.strictEqual(part1('19-sample1.txt'), 2);
+assert.strictEqual(part1('19-sample2.txt'), 3);
+
+assert.strictEqual(part2('19-sample2.txt'), 12);
 
 console.log(part1('19.txt'));
+console.log(part2('19.txt'));
