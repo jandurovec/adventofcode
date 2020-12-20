@@ -2,16 +2,24 @@ const utils = require('./utils');
 
 class Grid {
     constructor() {
-        this.data = {};
+        this.data = new Map();
+    }
+
+    delete(x, y) {
+        this.data.delete(utils.pos(x, y));
+    }
+
+    has(x, y) {
+        return this.data.has(utils.pos(x, y));
     }
 
     get(x, y) {
-        const entry = this.data[utils.pos(x, y)];
+        const entry = this.data.get(utils.pos(x, y));
         return entry === undefined ? undefined : entry.value;
     }
 
     set(x, y, value) {
-        this.data[utils.pos(x, y)] = { x, y, value };
+        this.data.set(utils.pos(x, y), { x, y, value });
         if (this.minX === undefined || x < this.minX) {
             this.minX = x;
         }
@@ -27,7 +35,7 @@ class Grid {
     }
 
     get entries() {
-        return Object.keys(this.data).map(k => this.data[k]);
+        return [...this.data.values()];
     }
 
     print(valToString = val => val) {

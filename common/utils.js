@@ -119,6 +119,14 @@ function readNumberInput(dir, file) {
     return readInput(dir, file).map(n => parseInt(n))
 }
 
+/**
+ * @param {string} s
+ * @returns {string} reversed string
+ */
+function reverseStr(s) {
+    return s.split('').reverse().join('');
+}
+
 function termClear() {
     process.stdout.write("\u001b[2J\u001b[H");
 }
@@ -138,6 +146,7 @@ module.exports = {
     permutate,
     readInput,
     readNumberInput,
+    reverseStr,
     termClear,
     termWrite
 }
